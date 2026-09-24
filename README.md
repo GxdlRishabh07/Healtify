@@ -147,7 +147,7 @@ Color palette: deep teal `#0E5C56` (primary/trust), warm coral `#E8683D`
 (actions/CTAs), soft mint `#F2F7F5` (background), ink `#16232B` (text).
 Typography: Fraunces (headings) + Inter (body/UI).
 
-## For your viva / report
+##  report
 "The patient registers and logs in, searches for a doctor and books an
 appointment. The doctor reviews the appointment, examines the patient, and
 enters a diagnosis and prescription. The patient's medical record updates
