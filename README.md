@@ -1,93 +1,158 @@
-# MediCore – Hospital & Healthcare Management System
-MCA Major Project · React (frontend) + Flask REST API (backend) + SQLite + scikit-learn + Chart.js
+# Healtify — Hospital & Healthcare Management System (MERN + Supabase)
 
-A web application with three roles (Patient, Doctor, Admin), an analytics dashboard built on a
-Kaggle-format healthcare dataset, and a machine-learning diabetes-risk predictor trained on the
-Kaggle "Pima Indians Diabetes" dataset. The UI is a React single-page app; Flask exposes JSON APIs
-and serves the ML predictions.
+A full-stack MCA major project: Patient, Doctor and Admin modules, appointment
+booking, e-prescriptions, billing, an online medicine/pharmacy ordering
+feature, and an admin reports dashboard with a simple appointment-demand
+forecast. Frontend is React; backend is Node/Express deployed as a Vercel
+serverless function; database is **Supabase (Postgres)** — no MongoDB
+required.
 
-## 1. Run it (5 minutes)
+## Tech stack
+- **Frontend:** React 18 (Vite), React Router, Axios, Recharts — deployed on Vercel
+- **Backend:** Node.js, Express — deployed on Vercel as a serverless function
+- **Database:** Supabase (managed Postgres)
+- **Auth:** JWT (JSON Web Tokens) + bcrypt password hashing (custom, not Supabase Auth)
 
-**Backend (Flask API)**
-```bash
-python -m venv venv
-venv\Scripts\activate            # Windows      (Mac/Linux: source venv/bin/activate)
-pip install -r requirements.txt
-python seed_data.py              # creates instance/hospital.db with demo data + 54,966 dataset rows
-python ml/train_model.py         # (optional) retrains the model and regenerates report graphs
-python app.py                    # runs the API at http://127.0.0.1:5000
+## Project structure
+```
+hospital-mern/
+├── backend/
+│   ├── config/supabaseClient.js   # Supabase server client (service role key)
+│   ├── routes/                     # auth, doctors, patients, appointments, prescriptions, billing, medicines, orders, admin, reports
+│   ├── middleware/auth.js          # JWT protect + role-based authorize
+│   ├── supabase/schema.sql         # run once in Supabase SQL editor
+│   ├── seed/seed.js                # sample dataset generator
+│   ├── app.js                      # express app (no listen)
+│   ├── server.js                   # local dev entry (app.listen)
+│   ├── api/index.js                # Vercel serverless entry
+│   └── vercel.json
+└── frontend/
+    └── src/
+        ├── api/axios.js
+        ├── context/AuthContext.jsx
+        ├── components/             # Sidebar, ProtectedRoute, StatusBadge
+        └── pages/
+            ├── patient/            # Dashboard, FindDoctor, BookAppointment, MyAppointments, MedicalRecords, Billing, Pharmacy
+            ├── doctor/              # Dashboard, Appointments (diagnose + prescribe)
+            └── admin/               # Dashboard, ManageDoctors, ManagePatients, ManageAppointments, BillingAdmin, PharmacyOrders, Reports
 ```
 
-**Frontend (React)**
+## Modules & features
+Same as before — patient booking/records/billing/pharmacy ordering, doctor
+diagnosis + prescriptions, admin management + reports with a 7-day
+appointment forecast (plain JS linear regression, no Python needed).
+
+## Database (Supabase/Postgres) — tables
+`users`, `doctors`, `appointments`, `prescriptions`, `bills`, `medicines`, `medicine_orders`
+— see `backend/supabase/schema.sql` for the full DDL.
+
+---
+
+## Part 1 — Set up Supabase (the database)
+
+1. Go to **supabase.com** → sign up / log in → **New project**.
+   - Pick an org, name it (e.g. `healtify`), set a database password (save it), pick a region → **Create new project**. Takes ~2 minutes to provision.
+2. Once it's ready, open **SQL Editor** (left sidebar) → **New query**.
+3. Open `backend/supabase/schema.sql` from this project, copy all of it, paste into the SQL editor, click **Run**. This creates all 7 tables.
+4. Go to **Project Settings → API** (left sidebar, gear icon → API).
+   - Copy the **Project URL** → this is `SUPABASE_URL`.
+   - Copy the **service_role** key (NOT the `anon` key — service_role bypasses row-level security and is required for this backend) → this is `SUPABASE_SERVICE_ROLE_KEY`. Keep it secret, never put it in frontend code.
+
+## Part 2 — Run the backend locally first (to seed data)
+
+```bash
+cd backend
+cp .env.example .env
+```
+Edit `.env`:
+```
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+JWT_SECRET=any_long_random_string
+PORT=5000
+```
+```bash
+npm install
+npm run seed     # populates sample doctors, patients, medicines, appointments
+npm run dev       # http://localhost:5000
+```
+Visit `http://localhost:5000/api/health` — should show `{"status":"ok"}`.
+
+## Part 3 — Run the frontend locally
+
 ```bash
 cd frontend
+cp .env.example .env
+```
+In `.env`, uncomment and use the local line:
+```
+VITE_API_URL=http://localhost:5000/api
+```
+```bash
 npm install
-npm run dev                      # runs the app at http://127.0.0.1:5173
+npm run dev        # http://localhost:5173
 ```
-A ready-made database and trained model are already included, so `python app.py` + `npm run dev` alone works.
+Log in with a seeded account (see below) and confirm everything works before deploying.
 
-| Role    | Email                  | Password   |
-|---------|------------------------|------------|
-| Admin   | admin@hospital.com     | admin123   |
-| Doctor  | doctor1@hospital.com … doctor12@hospital.com | doctor123 |
-| Patient | patient1@mail.com … patient40@mail.com       | patient123 |
+---
 
-New patients can also register from the login page.
+## Part 4 — Deploy to Vercel
 
-## 2. Datasets (both are the real Kaggle datasets)
-* **Hospital admissions (dashboard, reports, forecast)** – `data/healthcare_dataset.csv`: Kaggle *Healthcare Dataset*
-  (prasad22/healthcare-dataset), 55,500 rows x 15 columns, 8 May 2019 to 7 May 2024. The importer removes the 534 exact
-  duplicate rows (54,966 remain), fixes the random name casing ("Bobby JacksOn" -> "Bobby Jackson") and turns the 108
-  negative billing amounts positive. Billing in this dataset is in US dollars, so those charts use `$`; hospital OPD billing uses `₹`.
-* **Diabetes (prediction)** – `data/diabetes.csv`: Pima Indians Diabetes Database (768 rows), the same data as Kaggle's
-  `uciml/pima-indians-diabetes-database`.
-* Note for the viva: Kaggle's own description says the healthcare dataset is *synthetic*, so its trends are fairly flat.
-  Say "publicly available Kaggle dataset", not "real patient data".
-* To swap in another CSV with the same 15 columns: Admin -> **Hospital dataset** -> **Import a Kaggle CSV**.
-  Charts and forecast update immediately.
+You'll create **two** Vercel projects: one for the backend, one for the frontend.
 
-## 3. Features
-**Patient** – register/login, profile, search doctors by name/department, live slot booking (double-booking is blocked),
-cancel appointments, medical history and prescriptions, bills with payment and printable receipt, feedback, diabetes risk check.
+### 4a. Push to GitHub
+Create a new GitHub repo, push this whole `hospital-mern` folder to it (backend and frontend can live in the same repo — Vercel lets you pick a subfolder as the project root).
 
-**Doctor** – daily queue, confirm/cancel appointments, consultation form (diagnosis, vitals, prescription with several medicines),
-automatic bill generation and stock deduction, patient history, weekly and diagnosis charts, risk check tool.
+### 4b. Deploy the backend
+1. Go to **vercel.com** → **Add New → Project** → import your repo.
+2. When asked for the **Root Directory**, choose `backend`.
+3. Framework preset: **Other**. Leave build command empty (nothing to build).
+4. Under **Environment Variables**, add:
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `JWT_SECRET`
+5. Click **Deploy**. Once done, note the URL Vercel gives you, e.g. `https://healtify-backend.vercel.app`.
+6. Test it: open `https://healtify-backend.vercel.app/api/health` in a browser → should show `{"status":"ok"}`.
 
-**Admin** – dashboard with KPIs and 7 charts, manage patients / doctors / departments / appointments / medicines / billing,
-reports (10 charts, CSV export, print), dataset browser with filters and CSV import, model performance page, activity log.
+### 4c. Seed production data (one-time)
+Easiest way: temporarily point your **local** backend `.env` at the same Supabase project (it already is, if you used the same project) and run `npm run seed` from `backend/` locally — this writes straight into Supabase, so it's available to the deployed backend immediately. You don't need to re-run seed from Vercel.
 
-**Prediction and analytics**
-1. Diabetes risk – Logistic Regression selected over KNN, Random Forest and Gradient Boosting (5-fold CV ROC-AUC 0.84;
-   test accuracy 73%, recall 70%, ROC-AUC 0.81). Missing zeros are median-imputed inside a scikit-learn Pipeline.
-2. Admissions forecast – linear trend × monthly seasonality fitted on the dataset, next 3 months shown on the dashboard.
+### 4d. Deploy the frontend
+1. **Add New → Project** → import the same repo again.
+2. Root Directory: `frontend`.
+3. Framework preset: Vercel auto-detects **Vite**. Build command `npm run build`, output directory `dist` (defaults are fine).
+4. Under **Environment Variables**, add:
+   - `VITE_API_URL` = `https://healtify-backend.vercel.app/api` (your backend URL from step 4b, with `/api` at the end)
+5. Click **Deploy**.
+6. Visit the frontend URL Vercel gives you — that's your live app.
 
-## 4. Tech stack
-| Layer | Choice | Why |
-|---|---|---|
-| Frontend | **React** (Vite), React Router, Chart.js/Recharts | Component-based UI, fast dev server, reusable charts across roles |
-| Backend / API | Python 3, Flask (REST, JSON) | Simple, readable, standard for ML projects |
-| Database | **SQLite** (`instance/hospital.db`) | Zero setup, file based, full SQL with foreign keys. Schema is portable to MySQL/PostgreSQL |
-| ML | pandas, NumPy, scikit-learn, joblib | Data cleaning, model comparison, model saving |
-| Graphs | Chart.js (dashboards), Matplotlib (report images) | Interactive in-app, static for the printed report |
-| Security | PBKDF2 password hashes, JWT/session auth, role checks, CSRF tokens, parameterised SQL | |
+### Notes
+- Every time you push to GitHub, both Vercel projects auto-redeploy.
+- If login fails on the deployed site but works locally, it's almost always `VITE_API_URL` pointing at the wrong backend URL, or CORS — the backend already has `cors()` enabled for all origins, so that shouldn't block you.
+- Free tier limits: Supabase free project pauses after a week of no activity (just visit the dashboard to wake it up); Vercel serverless functions on the free plan have a short execution timeout, which is fine for this app's simple queries.
 
-## 5. Folder map
-```
-app.py                     Flask REST API (auth, admin, doctor, patient, prediction)
-database.py / seed_data.py schema and demo data + CSV importer
-ml/eda_hospital.py         graphs for the hospital dataset
-ml/train_model.py          model training, comparison and graphs
-ml/diabetes_model.joblib   trained pipeline      ml/metrics.json  scores
-data/                      diabetes.csv, healthcare_dataset.csv
-frontend/                  React app (src/pages, src/components — admin/, doctor/, patient/)
-report_graphs/             13 PNG graphs (diabetes model + hospital data) for your report and PPT
-docs/                      DATABASE.md, VIVA.md, DESIGN.md, schema.sql
-tests/smoke_test.py        opens every page and runs booking → consult → bill → payment
-```
+---
 
-## 6. Limits to mention honestly
-* Diabetes model accuracy is about 73% – normal for this small dataset. It is a screening aid, not a diagnosis.
-* Payment is a demo (records a payment; no gateway). Use a real gateway (Razorpay/Stripe) for production.
-* SQLite suits a single hospital demo; move to MySQL/PostgreSQL for many concurrent users.
-* Change `SECRET_KEY` in `app.py`, the JWT secret, and all demo passwords before any real deployment.
-* React frontend and Flask API run as two dev servers locally — in production, build the React app (`npm run build`) and serve it via Flask or a static host, with API calls proxied to the Flask backend.
+## Sample logins (after `npm run seed`)
+All passwords: `Password@123`
+
+| Role    | Email                  |
+|---------|-------------------------|
+| Admin   | admin@hospital.com      |
+| Doctor  | doctor1@hospital.com … doctor6@hospital.com |
+| Patient | patient1@example.com … patient10@example.com |
+
+## Design
+Color palette: deep teal `#0E5C56` (primary/trust), warm coral `#E8683D`
+(actions/CTAs), soft mint `#F2F7F5` (background), ink `#16232B` (text).
+Typography: Fraunces (headings) + Inter (body/UI).
+
+## For your viva / report
+"The patient registers and logs in, searches for a doctor and books an
+appointment. The doctor reviews the appointment, examines the patient, and
+enters a diagnosis and prescription. The patient's medical record updates
+automatically and a bill is generated. The patient can also order medicines
+online for delivery. The admin manages doctors, patients, appointments,
+billing and pharmacy orders through a central dashboard, which also shows a
+simple forecast of upcoming appointment demand. The system is deployed on
+Vercel with Supabase (Postgres) as the database."
