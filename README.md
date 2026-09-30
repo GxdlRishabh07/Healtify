@@ -1,165 +1,181 @@
-# Healtify — Hospital & Healthcare Management System (MERN + Supabase)
+# Healtify - Hospital & Healthcare Management System
 
-Group Member
+MCA Major Project (MERN + Supabase)
 
-Prerna Shirke (1272250097).
-Yash Toraskar (1272250251).
-Sonal Adhav	(1272250111).
-Rishabh Patil (1272250228).
+## Group Members
 
-A full-stack MCA major project: Patient, Doctor and Admin modules, appointment
-booking, e-prescriptions, billing, an online medicine/pharmacy ordering
-feature, and an admin reports dashboard with a simple appointment-demand
-forecast. Frontend is React; backend is Node/Express deployed as a Vercel
-serverless function; database is **Supabase (Postgres)** — no MongoDB
-required.
+- **Prerna Shirke** (1272250097)
+- **Yash Toraskar** (1272250251)
+- **Sonal Adhav** (1272250111)
+- **Rishabh Patil** (1272250228)
 
-## Tech stack
-- **Frontend:** React 18 (Vite), React Router, Axios, Recharts — deployed on Vercel
-- **Backend:** Node.js, Express — deployed on Vercel as a serverless function
-- **Database:** Supabase (managed Postgres)
-- **Auth:** JWT (JSON Web Tokens) + bcrypt password hashing (custom, not Supabase Auth)
+## About the Project
 
-## Project structure
+Healtify is a full-stack hospital management system with three modules: Patient, Doctor and Admin. It has appointment booking, e-prescriptions, billing, online medicine ordering (pharmacy) and an admin reports dashboard that shows a simple forecast of appointments for the next 7 days.
+
+The frontend is made in React, the backend is Node/Express (deployed on Vercel as a serverless function) and the database is Supabase (Postgres). MongoDB is not used.
+
+## Tech Stack
+
+- **Frontend:** React 18 (Vite), React Router, Axios, Recharts (deployed on Vercel)
+- **Backend:** Node.js, Express (deployed on Vercel as a serverless function)
+- **Database:** Supabase (Postgres)
+- **Authentication:** JWT + bcrypt password hashing (we made our own auth, Supabase Auth is not used)
+
+## Project Structure
+
 ```
 hospital-mern/
 ├── backend/
-│   ├── config/supabaseClient.js   # Supabase server client (service role key)
-│   ├── routes/                     # auth, doctors, patients, appointments, prescriptions, billing, medicines, orders, admin, reports
-│   ├── middleware/auth.js          # JWT protect + role-based authorize
-│   ├── supabase/schema.sql         # run once in Supabase SQL editor
-│   ├── seed/seed.js                # sample dataset generator
-│   ├── app.js                      # express app (no listen)
-│   ├── server.js                   # local dev entry (app.listen)
-│   ├── api/index.js                # Vercel serverless entry
+│   ├── config/supabaseClient.js   # Supabase client (service role key)
+│   ├── routes/                    # auth, doctors, patients, appointments, prescriptions, billing, medicines, orders, admin, reports
+│   ├── middleware/auth.js         # JWT protect + role based authorize
+│   ├── supabase/schema.sql        # run once in Supabase SQL editor
+│   ├── seed/seed.js               # adds sample data
+│   ├── app.js                     # express app (no listen)
+│   ├── server.js                  # local entry (app.listen)
+│   ├── api/index.js               # Vercel serverless entry
 │   └── vercel.json
 └── frontend/
     └── src/
         ├── api/axios.js
         ├── context/AuthContext.jsx
-        ├── components/             # Sidebar, ProtectedRoute, StatusBadge
+        ├── components/            # Sidebar, ProtectedRoute, StatusBadge
         └── pages/
-            ├── patient/            # Dashboard, FindDoctor, BookAppointment, MyAppointments, MedicalRecords, Billing, Pharmacy
-            ├── doctor/              # Dashboard, Appointments (diagnose + prescribe)
-            └── admin/               # Dashboard, ManageDoctors, ManagePatients, ManageAppointments, BillingAdmin, PharmacyOrders, Reports
+            ├── patient/           # Dashboard, FindDoctor, BookAppointment, MyAppointments, MedicalRecords, Billing, Pharmacy
+            ├── doctor/            # Dashboard, Appointments (diagnose + prescribe)
+            └── admin/             # Dashboard, ManageDoctors, ManagePatients, ManageAppointments, BillingAdmin, PharmacyOrders, Reports
 ```
 
-## Modules & features
-Same as before — patient booking/records/billing/pharmacy ordering, doctor
-diagnosis + prescriptions, admin management + reports with a 7-day
-appointment forecast (plain JS linear regression, no Python needed).
+## Modules and Features
 
-## Database (Supabase/Postgres) — tables
+**Patient**
+- Register and login
+- Search doctors and book appointments
+- View medical records and prescriptions
+- View bills
+- Order medicines online
+
+**Doctor**
+- View appointments
+- Enter diagnosis and write prescription
+
+**Admin**
+- Manage doctors, patients and appointments
+- Manage billing and pharmacy orders
+- Reports dashboard with a 7-day appointment forecast (done using linear regression in plain JavaScript)
+
+## Database Tables
+
 `users`, `doctors`, `appointments`, `prescriptions`, `bills`, `medicines`, `medicine_orders`
-— see `backend/supabase/schema.sql` for the full DDL.
+
+The full SQL is in `backend/supabase/schema.sql`.
 
 ---
 
-## Part 1 — Set up Supabase (the database)
+## Setup Guide
 
-1. Go to **supabase.com** → sign up / log in → **New project**.
-   - Pick an org, name it (e.g. `healtify`), set a database password (save it), pick a region → **Create new project**. Takes ~2 minutes to provision.
-2. Once it's ready, open **SQL Editor** (left sidebar) → **New query**.
-3. Open `backend/supabase/schema.sql` from this project, copy all of it, paste into the SQL editor, click **Run**. This creates all 7 tables.
-4. Go to **Project Settings → API** (left sidebar, gear icon → API).
-   - Copy the **Project URL** → this is `SUPABASE_URL`.
-   - Copy the **service_role** key (NOT the `anon` key — service_role bypasses row-level security and is required for this backend) → this is `SUPABASE_SERVICE_ROLE_KEY`. Keep it secret, never put it in frontend code.
+### Part 1 - Set up Supabase
 
-## Part 2 — Run the backend locally first (to seed data)
+1. Go to **supabase.com**, log in and click **New project**. Give it a name (for example `healtify`), set a database password, choose a region and create it. It takes around 2 minutes.
+2. Open **SQL Editor** from the left sidebar and click **New query**.
+3. Copy everything from `backend/supabase/schema.sql`, paste it in the editor and click **Run**. This creates all 7 tables.
+4. Go to **Project Settings → API**.
+   - Copy the **Project URL**. This is `SUPABASE_URL`.
+   - Copy the **service_role** key (not the `anon` key). This is `SUPABASE_SERVICE_ROLE_KEY`. Do not put it in the frontend code.
+
+### Part 2 - Run the backend locally
 
 ```bash
 cd backend
 cp .env.example .env
 ```
-Edit `.env`:
+
+Edit the `.env` file:
+
 ```
 SUPABASE_URL=https://your-project-ref.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 JWT_SECRET=any_long_random_string
 PORT=5000
 ```
+
 ```bash
 npm install
-npm run seed     # populates sample doctors, patients, medicines, appointments
-npm run dev       # http://localhost:5000
+npm run seed     # adds sample doctors, patients, medicines, appointments
+npm run dev      # runs on http://localhost:5000
 ```
-Visit `http://localhost:5000/api/health` — should show `{"status":"ok"}`.
 
-## Part 3 — Run the frontend locally
+Open `http://localhost:5000/api/health`. It should show `{"status":"ok"}`.
+
+### Part 3 - Run the frontend locally
 
 ```bash
 cd frontend
 cp .env.example .env
 ```
-In `.env`, uncomment and use the local line:
+
+In the `.env` file use the local URL:
+
 ```
 VITE_API_URL=http://localhost:5000/api
 ```
+
 ```bash
 npm install
-npm run dev        # http://localhost:5173
+npm run dev      # runs on http://localhost:5173
 ```
-Log in with a seeded account (see below) and confirm everything works before deploying.
 
----
+Login with the sample accounts given below and check that everything works.
 
-## Part 4 — Deploy to Vercel
+### Part 4 - Deploy on Vercel
 
-You'll create **two** Vercel projects: one for the backend, one for the frontend.
+We made two Vercel projects, one for backend and one for frontend.
 
-### 4a. Push to GitHub
-Create a new GitHub repo, push this whole `hospital-mern` folder to it (backend and frontend can live in the same repo — Vercel lets you pick a subfolder as the project root).
+**Step 1: Push to GitHub**
+Create a new GitHub repo and push the whole `hospital-mern` folder. Both backend and frontend can be in the same repo.
 
-### 4b. Deploy the backend
-1. Go to **vercel.com** → **Add New → Project** → import your repo.
-2. When asked for the **Root Directory**, choose `backend`.
-3. Framework preset: **Other**. Leave build command empty (nothing to build).
-4. Under **Environment Variables**, add:
-   - `SUPABASE_URL`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-   - `JWT_SECRET`
-5. Click **Deploy**. Once done, note the URL Vercel gives you, e.g. `https://healtify-backend.vercel.app`.
-6. Test it: open `https://healtify-backend.vercel.app/api/health` in a browser → should show `{"status":"ok"}`.
+**Step 2: Deploy the backend**
+1. On **vercel.com** click **Add New → Project** and import the repo.
+2. Set **Root Directory** to `backend`.
+3. Framework preset: **Other**. Leave the build command empty.
+4. Add these environment variables: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `JWT_SECRET`.
+5. Click **Deploy** and note the backend URL, for example `https://healtify-backend.vercel.app`.
+6. Open `https://healtify-backend.vercel.app/api/health` to test. It should show `{"status":"ok"}`.
 
-### 4c. Seed production data (one-time)
-Easiest way: temporarily point your **local** backend `.env` at the same Supabase project (it already is, if you used the same project) and run `npm run seed` from `backend/` locally — this writes straight into Supabase, so it's available to the deployed backend immediately. You don't need to re-run seed from Vercel.
+**Step 3: Seed the data (only once)**
+Run `npm run seed` from the `backend/` folder on your local system. Since the local `.env` points to the same Supabase project, the data goes directly into Supabase and the deployed backend can use it. No need to seed again from Vercel.
 
-### 4d. Deploy the frontend
-1. **Add New → Project** → import the same repo again.
-2. Root Directory: `frontend`.
-3. Framework preset: Vercel auto-detects **Vite**. Build command `npm run build`, output directory `dist` (defaults are fine).
-4. Under **Environment Variables**, add:
-   - `VITE_API_URL` = `https://healtify-backend.vercel.app/api` (your backend URL from step 4b, with `/api` at the end)
-5. Click **Deploy**.
-6. Visit the frontend URL Vercel gives you — that's your live app.
+**Step 4: Deploy the frontend**
+1. Click **Add New → Project** and import the same repo again.
+2. Set **Root Directory** to `frontend`.
+3. Vercel detects **Vite** automatically (build command `npm run build`, output directory `dist`).
+4. Add environment variable `VITE_API_URL` = `https://healtify-backend.vercel.app/api` (your backend URL with `/api` at the end).
+5. Click **Deploy**. The URL Vercel gives is the live app.
 
 ### Notes
-- Every time you push to GitHub, both Vercel projects auto-redeploy.
-- If login fails on the deployed site but works locally, it's almost always `VITE_API_URL` pointing at the wrong backend URL, or CORS — the backend already has `cors()` enabled for all origins, so that shouldn't block you.
-- Free tier limits: Supabase free project pauses after a week of no activity (just visit the dashboard to wake it up); Vercel serverless functions on the free plan have a short execution timeout, which is fine for this app's simple queries.
+
+- After every push to GitHub, both Vercel projects redeploy automatically.
+- If login works locally but not on the deployed site, check `VITE_API_URL` first (it may be pointing to a wrong backend URL). CORS is already enabled in the backend.
+- Supabase free projects get paused after about a week of no activity. Just open the dashboard to start it again.
 
 ---
 
-## Sample logins (after `npm run seed`)
-All passwords: `Password@123`
+## Sample Logins (after `npm run seed`)
 
-| Role    | Email                  |
-|---------|-------------------------|
-| Admin   | admin@hospital.com      |
-| Doctor  | doctor1@hospital.com … doctor6@hospital.com |
-| Patient | patient1@example.com … patient10@example.com |
+Password for all accounts: `Password@123`
+
+| Role    | Email                                        |
+|---------|----------------------------------------------|
+| Admin   | admin@hospital.com                           |
+| Doctor  | doctor1@hospital.com to doctor6@hospital.com |
+| Patient | patient1@example.com to patient10@example.com |
 
 ## Design
-Color palette: deep teal `#0E5C56` (primary/trust), warm coral `#E8683D`
-(actions/CTAs), soft mint `#F2F7F5` (background), ink `#16232B` (text).
-Typography: Fraunces (headings) + Inter (body/UI).
 
-##  report
-"The patient registers and logs in, searches for a doctor and books an
-appointment. The doctor reviews the appointment, examines the patient, and
-enters a diagnosis and prescription. The patient's medical record updates
-automatically and a bill is generated. The patient can also order medicines
-online for delivery. The admin manages doctors, patients, appointments,
-billing and pharmacy orders through a central dashboard, which also shows a
-simple forecast of upcoming appointment demand. The system is deployed on
-Vercel with Supabase (Postgres) as the database."
+- Colors: teal `#0E5C56`, coral `#E8683D`, mint `#F2F7F5`, dark text `#16232B`
+- Fonts: Fraunces (headings) and Inter (body)
+
+## Project Summary
+
+The patient registers, logs in, searches for a doctor and books an appointment. The doctor checks the appointment, examines the patient and enters the diagnosis and prescription. The patient's medical record is updated automatically and a bill is generated. The patient can also order medicines online for delivery. The admin manages doctors, patients, appointments, billing and pharmacy orders from one dashboard, which also shows a simple forecast of upcoming appointments. The system is deployed on Vercel with Supabase (Postgres) as the database.
