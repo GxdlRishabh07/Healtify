@@ -1,5 +1,12 @@
 # Healtify — Hospital & Healthcare Management System (MERN + Supabase)
 
+Group Member
+
+Prerna Shirke (1272250097).
+Yash Toraskar (1272250251).
+Sonal Adhav	(1272250111).
+Rishabh Patil (1272250228).
+
 A full-stack MCA major project: Patient, Doctor and Admin modules, appointment
 booking, e-prescriptions, billing, an online medicine/pharmacy ordering
 feature, and an admin reports dashboard with a simple appointment-demand
