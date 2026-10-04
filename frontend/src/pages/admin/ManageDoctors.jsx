@@ -12,6 +12,7 @@ export default function ManageDoctors() {
   const [form, setForm] = useState(empty);
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
 
   const load = () => api.get("/admin/doctors").then((res) => setDoctors(res.data)).catch(() => {});
   useEffect(() => { load(); }, []);
@@ -67,10 +68,22 @@ export default function ManageDoctors() {
         </form>
       )}
 
+      <input
+        placeholder="Search by name or department..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={{ padding: "10px 13px", border: "1px solid var(--line)", borderRadius: 8, marginBottom: 16, width: "100%", maxWidth: 360 }}
+      />
+
       <table className="data-table">
         <thead><tr><th>Name</th><th>Department</th><th>Fee</th><th>Status</th><th></th></tr></thead>
         <tbody>
-          {doctors.map((d) => (
+          {doctors
+            .filter((d) => {
+              const q = search.toLowerCase();
+              return !q || d.user?.name?.toLowerCase().includes(q) || d.department?.toLowerCase().includes(q);
+            })
+            .map((d) => (
             <tr key={d.id}>
               <td>Dr. {d.user?.name}<div style={{ fontSize: "0.8rem", color: "var(--slate)" }}>{d.user?.email}</div></td>
               <td>{d.department}</td>
