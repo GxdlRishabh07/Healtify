@@ -5,6 +5,7 @@ import Sidebar from "./components/Sidebar.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
 
 import Login from "./pages/Login.jsx";
+import NotFound from "./pages/NotFound.jsx";
 import Register from "./pages/Register.jsx";
 
 import PatientDashboard from "./pages/patient/Dashboard.jsx";
@@ -66,7 +67,7 @@ export default function App() {
       <Route path="/admin/pharmacy" element={<ProtectedRoute roles={["admin"]}><DashboardLayout><PharmacyOrders /></DashboardLayout></ProtectedRoute>} />
       <Route path="/admin/reports" element={<ProtectedRoute roles={["admin"]}><DashboardLayout><Reports /></DashboardLayout></ProtectedRoute>} />
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
