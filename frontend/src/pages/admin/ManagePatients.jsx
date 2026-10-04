@@ -3,6 +3,7 @@ import api from "../../api/axios.js";
 
 export default function ManagePatients() {
   const [patients, setPatients] = useState([]);
+  const [search, setSearch] = useState("");
 
   const load = () => api.get("/patients").then((res) => setPatients(res.data)).catch(() => {});
   useEffect(() => { load(); }, []);
@@ -15,10 +16,21 @@ export default function ManagePatients() {
   return (
     <div>
       <div className="page-header"><div><h1>Manage patients</h1><p>All registered patients in the system.</p></div></div>
+      <input
+        placeholder="Search by name or email..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={{ padding: "10px 13px", border: "1px solid var(--line)", borderRadius: 8, marginBottom: 16, width: "100%", maxWidth: 360 }}
+      />
       <table className="data-table">
         <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th></th></tr></thead>
         <tbody>
-          {patients.map((p) => (
+          {patients
+            .filter((p) => {
+              const q = search.toLowerCase();
+              return !q || p.name?.toLowerCase().includes(q) || p.email?.toLowerCase().includes(q);
+            })
+            .map((p) => (
             <tr key={p.id}>
               <td>{p.name}</td>
               <td>{p.email}</td>
