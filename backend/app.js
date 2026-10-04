@@ -7,6 +7,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// simple request logger
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} ${req.method} ${req.originalUrl}`);
+  next();
+});
+
 app.get("/api/health", (req, res) => res.json({ status: "ok", service: "healtify-backend" }));
 
 app.use("/api/auth", require("./routes/auth"));
