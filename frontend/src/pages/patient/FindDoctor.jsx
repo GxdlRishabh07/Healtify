@@ -7,6 +7,7 @@ export default function FindDoctor() {
   const [departments, setDepartments] = useState([]);
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("");
+  const [sortByFee, setSortByFee] = useState("");
   const navigate = useNavigate();
 
   const load = () => {
@@ -38,17 +39,29 @@ export default function FindDoctor() {
           <option value="">All departments</option>
           {departments.map((d) => <option key={d} value={d}>{d}</option>)}
         </select>
+        <select value={sortByFee} onChange={(e) => setSortByFee(e.target.value)} style={{ padding: "11px 13px", border: "1px solid var(--line)", borderRadius: 8 }}>
+          <option value="">Sort by fee</option>
+          <option value="asc">Fee: low to high</option>
+          <option value="desc">Fee: high to low</option>
+        </select>
         <button className="btn btn-secondary" onClick={load}>Search</button>
       </div>
 
       <div className="grid-cards">
-        {doctors.map((doc) => (
+        {[...doctors]
+          .sort((a, b) => {
+            if (sortByFee === "asc") return a.consultation_fee - b.consultation_fee;
+            if (sortByFee === "desc") return b.consultation_fee - a.consultation_fee;
+            return 0;
+          })
+          .map((doc) => (
           <div className="doctor-tile" key={doc.id}>
             <h3>Dr. {doc.user?.name}</h3>
             <div className="dept">{doc.specialization} · {doc.department}</div>
             <div className="meta">{doc.experience_years} yrs experience · ₹{doc.consultation_fee} fee</div>
             <button className="btn btn-primary btn-sm" onClick={() => navigate(`/patient/book/${doc.id}`)}>Book appointment</button>
           </div>
+        ))}
         ))}
         {doctors.length === 0 && <div className="empty-state">No doctors found.</div>}
       </div>
