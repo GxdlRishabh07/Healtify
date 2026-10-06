@@ -11,6 +11,7 @@ export default function Pharmacy() {
   const [orders, setOrders] = useState([]);
   const [placing, setPlacing] = useState(false);
   const [message, setMessage] = useState("");
+  const [inStockOnly, setInStockOnly] = useState(false);
 
   const loadMedicines = () => api.get("/medicines", { params: { search } }).then((res) => setMedicines(res.data)).catch(() => {});
   const loadOrders = () => api.get("/orders/my").then((res) => setOrders(res.data)).catch(() => {});
@@ -54,6 +55,10 @@ export default function Pharmacy() {
       <div className="page-header">
         <div><h1>Order medicine</h1><p>Browse the pharmacy catalog and get medicines delivered.</p></div>
       </div>
+      <label style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, fontSize: "0.9rem", color: "var(--slate)" }}>
+        <input type="checkbox" checked={inStockOnly} onChange={(e) => setInStockOnly(e.target.checked)} />
+        Show in-stock medicines only
+      </label>
 
       <div style={{ display: "flex", gap: 32, alignItems: "flex-start", flexWrap: "wrap" }}>
         <div style={{ flex: "2 1 420px" }}>
@@ -65,7 +70,9 @@ export default function Pharmacy() {
             style={{ width: "100%", padding: "11px 13px", border: "1px solid var(--line)", borderRadius: 8, marginBottom: 16 }}
           />
           <div className="grid-cards">
-            {medicines.map((m) => (
+            {medicines
+              .filter((m) => !inStockOnly || m.stock > 0)
+              .map((m) => (
               <div className="doctor-tile" key={m.id}>
                 <h3>{m.name}</h3>
                 <div className="dept">{m.brand} · {m.category}</div>
