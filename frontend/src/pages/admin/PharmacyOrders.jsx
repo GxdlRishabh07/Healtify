@@ -16,6 +16,7 @@ export default function PharmacyOrders() {
   const advance = async (id, status) => {
     const next = NEXT_STATUS[status];
     if (!next) return;
+    if (!window.confirm(`Mark this order as "${next.replace("_", " ")}"?`)) return;
     await api.put(`/orders/${id}/status`, { status: next });
     load();
   };
