@@ -9,6 +9,7 @@ export default function MyAppointments() {
   useEffect(() => { load(); }, []);
 
   const cancel = async (id) => {
+    if (!window.confirm("Cancel this appointment?")) return;
     await api.put(`/appointments/${id}/status`, { status: "cancelled" });
     load();
   };
